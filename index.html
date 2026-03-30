@@ -10,9 +10,9 @@
 
         :root {
             --accent: #3b82f6;
-            --bg: #050505;
-            --panel: rgba(18, 18, 20, 0.9);
-            --safe-bottom: env(safe-area-inset-bottom, 20px);
+            --bg: #000;
+            --panel: rgba(15, 15, 18, 0.98);
+            --safe-bottom: env(safe-area-inset-bottom, 24px);
         }
 
         body {
@@ -26,52 +26,37 @@
             flex-direction: column;
         }
 
+        /* Maximized Viewport */
         .viewport {
             flex: 1;
-            min-height: 0; 
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 16px;
-            background: radial-gradient(circle at 50% 40%, #1a1a1e 0%, #050505 100%);
+            padding: 10px;
+            background: #0a0a0a;
             position: relative;
             overflow: hidden;
         }
 
         canvas {
-            max-width: 100%;
-            max-height: 100%;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05);
+            max-width: 95%;
+            max-height: 95%;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.9);
             background: #fff;
             touch-action: none;
-            border-radius: 2px;
-            object-fit: contain;
-        }
-
-        #magnifier {
-            position: absolute;
-            width: 180px;
-            height: 180px;
-            border-radius: 50%;
-            border: 3px solid #fff;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-            pointer-events: none;
-            display: none;
-            z-index: 100;
-            background-color: #fff;
-            overflow: hidden;
+            border-radius: 1px;
         }
 
         .controls {
             flex-shrink: 0;
-            height: 42dvh;
-            min-height: 320px;
+            height: 38dvh;
+            min-height: 340px;
             background: var(--panel);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border-top: 1px solid rgba(255,255,255,0.1);
-            border-top-left-radius: 32px;
-            border-top-right-radius: 32px;
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border-top: 1px solid rgba(255,255,255,0.08);
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
             display: flex;
             flex-direction: column;
             padding-bottom: var(--safe-bottom);
@@ -80,92 +65,58 @@
 
         .tab-bar {
             display: flex;
-            padding: 20px 24px 10px;
-            gap: 24px;
+            padding: 16px 20px 8px;
+            gap: 20px;
+            justify-content: center;
         }
 
         .tab-btn {
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            color: #666;
+            color: #444;
             position: relative;
-            padding-bottom: 8px;
-            transition: color 0.3s;
+            padding: 8px 12px;
         }
 
-        .tab-btn.active {
-            color: #fff;
-        }
-
+        .tab-btn.active { color: #fff; }
         .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: var(--accent);
-            border-radius: 3px;
+            content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 20px; height: 3px; background: var(--accent); border-radius: 3px;
         }
 
         .settings-pane {
             flex: 1;
             overflow-y: auto;
-            padding: 12px 24px 20px;
+            padding: 10px 24px;
             -webkit-overflow-scrolling: touch;
         }
 
+        /* Large Touch-Friendly Sliders */
+        .control-group { margin-bottom: 22px; }
         input[type=range] {
             -webkit-appearance: none;
-            width: 100%;
-            height: 8px;
-            border-radius: 4px;
-            outline: none;
-            margin: 12px 0 20px 0;
-            background: #2a2a2e;
+            width: 100%; height: 12px; border-radius: 6px; margin: 14px 0; background: #1a1a1e;
         }
-
         input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 28px;
-            height: 28px;
-            background: #fff;
-            border-radius: 50%;
-            border: 3px solid #000;
-            cursor: pointer;
+            -webkit-appearance: none; width: 34px; height: 34px; background: #fff; border-radius: 50%; border: 4px solid #000; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        #redChan { background: linear-gradient(to right, #2a2a2e, #ff4444); }
-        #greenChan { background: linear-gradient(to right, #2a2a2e, #22c55e); }
-        #blueChan { background: linear-gradient(to right, #2a2a2e, #3b82f6); }
+        .control-label { display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; color: #777; text-transform: uppercase; }
+        .control-val { color: #fff; }
 
-        .control-label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 10px;
-            font-weight: 800;
-            color: #999;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        /* Preview Overlay */
+        #previewOverlay {
+            position: fixed; inset: 0; background: #000; z-index: 1000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            padding: 16px;
         }
-
-        .control-val { color: #fff; font-weight: 600; }
+        #previewImg { max-width: 100%; max-height: 82vh; border-radius: 2px; }
 
         .btn-main {
-            background: #fff;
-            color: #000;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 14px;
-            border-radius: 14px;
-            font-size: 13px;
-            transition: transform 0.1s;
+            background: #fff; color: #000; font-weight: 800; text-transform: uppercase; 
+            padding: 18px; border-radius: 16px; font-size: 13px; width: 100%;
         }
-
-        .btn-main:active { transform: scale(0.96); }
         .marker-font { font-family: 'Permanent Marker', cursive; }
     </style>
 </head>
@@ -173,131 +124,113 @@
 
     <div class="viewport" id="viewport">
         <canvas id="mainCanvas"></canvas>
-        <div id="magnifier">
-            <canvas id="magCanvas"></canvas>
+        <div id="emptyState" class="absolute flex flex-col items-center opacity-20 pointer-events-none">
+            <p class="text-[10px] font-bold uppercase tracking-[0.4em]">Negative Required</p>
         </div>
-        <div id="emptyState" class="absolute flex flex-col items-center opacity-30 pointer-events-none">
-            <div class="w-16 h-16 border-2 border-dashed border-white/40 rounded-full flex items-center justify-center mb-4">
-                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-            </div>
-            <p class="text-[10px] font-bold uppercase tracking-[0.3em]">Load Negative</p>
-        </div>
-        <div id="zoomHint" class="absolute bottom-4 text-[9px] font-bold tracking-[0.2em] text-white/40 uppercase hidden">Long press to zoom</div>
+        <button onclick="showPreview()" id="inspectBtn" class="absolute bottom-6 right-6 w-14 h-14 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-center hidden active:scale-90 transition-transform">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+        </button>
     </div>
 
     <div class="controls">
         <div class="tab-bar">
-            <button class="tab-btn active" onclick="switchTab('optics', this)">Optics</button>
-            <button class="tab-btn" onclick="switchTab('color', this)">Color</button>
-            <button class="tab-btn" onclick="switchTab('finish', this)">Finish</button>
+            <button class="tab-btn active" onclick="switchTab('optics', this)">Photo</button>
+            <button class="tab-btn" onclick="switchTab('color', this)">Chemicals</button>
+            <button class="tab-btn" onclick="switchTab('finish', this)">Final Touch</button>
         </div>
 
         <div class="settings-pane" id="opticsPane">
-            <div>
-                <div class="control-label"><span>Magnification</span><span class="control-val" id="zoomVal">1.0x</span></div>
+            <div class="control-group">
+                <div class="control-label"><span>Zoom</span><span class="control-val" id="zoomVal">1.0x</span></div>
                 <input type="range" id="zoom" min="0.5" max="3.5" step="0.01" value="1.0">
             </div>
-            <div>
-                <div class="control-label"><span>Orientation</span><span class="control-val" id="rotVal">0°</span></div>
+            <div class="control-group">
+                <div class="control-label"><span>Rotation</span><span class="control-val" id="rotVal">0°</span></div>
                 <input type="range" id="rotation" min="-180" max="180" value="0">
             </div>
-            <div>
-                <div class="control-label"><span>Bokeh (Lens Blur)</span><span class="control-val" id="bokehVal">0</span></div>
-                <input type="range" id="bokeh" min="0" max="60" value="0">
+            <div class="control-group">
+                <div class="control-label"><span>Bokeh</span><span class="control-val" id="bokehVal">0</span></div>
+                <input type="range" id="bokeh" min="0" max="80" value="0">
             </div>
         </div>
 
         <div class="settings-pane hidden" id="colorPane">
-            <div>
+            <div class="control-group">
                 <div class="control-label"><span>Exposure</span><span class="control-val" id="expVal">100%</span></div>
-                <input type="range" id="exposure" min="40" max="160" value="100">
+                <input type="range" id="exposure" min="40" max="180" value="100">
             </div>
-            <div>
+            <div class="control-group">
                 <div class="control-label"><span>Contrast</span><span class="control-val" id="conVal">100%</span></div>
-                <input type="range" id="contrast" min="40" max="160" value="100">
+                <input type="range" id="contrast" min="40" max="180" value="100">
             </div>
-            <div class="mt-2">
-                <div class="control-label"><span>Red Tint</span><span class="control-val" id="redVal">0</span></div>
-                <input type="range" id="redChan" min="-50" max="50" value="0">
-            </div>
-            <div>
-                <div class="control-label"><span>Green Tint</span><span class="control-val" id="greenVal">0</span></div>
-                <input type="range" id="greenChan" min="-50" max="50" value="0">
-            </div>
-            <div>
-                <div class="control-label"><span>Blue Tint</span><span class="control-val" id="blueVal">0</span></div>
-                <input type="range" id="blueChan" min="-50" max="50" value="0">
+            <div class="control-label"><span>RGB</span></div>
+            <div class="flex flex-col gap-1 mt-2">
+                <input type="range" id="redChan" min="-40" max="40" value="0" class="!my-2">
+                <input type="range" id="greenChan" min="-40" max="40" value="0" class="!my-2">
+                <input type="range" id="blueChan" min="-40" max="40" value="0" class="!my-2">
             </div>
         </div>
 
         <div class="settings-pane hidden" id="finishPane">
-            <div>
-                <div class="control-label"><span>Film Grain</span><span class="control-val" id="grainVal">15</span></div>
-                <input type="range" id="grain" min="0" max="100" value="15">
+            <div class="control-group">
+                <div class="control-label"><span>Film Grain</span><span class="control-val" id="grainVal">25</span></div>
+                <input type="range" id="grain" min="0" max="100" value="25">
             </div>
-            <div class="mt-1">
-                <div class="control-label"><span>Marker Annotation</span></div>
-                <input type="text" id="markerText" placeholder="Write something..." 
-                    class="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 mt-2 mb-4 text-white marker-font outline-none focus:border-blue-500/50 text-base">
-            </div>
-            <div>
-                <div class="control-label"><span>Text Size</span><span class="control-val" id="textSizeVal">1.0x</span></div>
+            <input type="text" id="markerText" placeholder="Marker scribble..." 
+                class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 mb-4 text-white marker-font outline-none text-lg">
+            <div class="control-group">
+                <div class="control-label"><span>Text Scale</span><span class="control-val" id="textSizeVal">1.0x</span></div>
                 <input type="range" id="textSize" min="0.5" max="3" step="0.1" value="1.0">
             </div>
         </div>
 
-        <div class="p-4 flex gap-3 mt-auto border-t border-white/10">
+        <div class="px-6 py-4 flex gap-4 mt-auto border-t border-white/5">
             <label class="flex-1">
-                <div class="w-full h-full flex items-center justify-center bg-white/5 border border-white/10 rounded-xl font-bold text-[10px] uppercase tracking-widest active:bg-white/10 cursor-pointer transition-colors">Import</div>
+                <div class="w-full h-full flex items-center justify-center bg-white/5 border border-white/10 rounded-2xl font-bold text-[11px] uppercase tracking-[0.2em] active:bg-white/10">Load</div>
                 <input type="file" id="imgInput" accept="image/*" class="hidden">
             </label>
-            <button id="exportBtn" class="btn-main flex-[2]">Save Polaroid</button>
+            <button id="exportBtn" class="btn-main flex-[2.5] active:scale-[0.98] transition-transform">Save Polaroid</button>
         </div>
+    </div>
+
+    <div id="previewOverlay" onclick="hidePreview()">
+        <p class="text-white/40 text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Tap to close • Long-press to save to photos</p>
+        <img id="previewImg" src="" alt="Polaroid Preview">
+        <button class="mt-8 px-10 py-4 bg-white/5 rounded-full text-[11px] font-bold uppercase tracking-widest border border-white/10">Return to Studio</button>
     </div>
 
 <script>
     const canvas = document.getElementById('mainCanvas');
-    const ctx = canvas.getContext('2d', { alpha: false });
-    
-    // Internal Studio Dimensions
-    const BASE_S = 2400;
-    const MARGIN = 160;
-    const FOOTER = 640;
-    const TOTAL_W = BASE_S + (MARGIN * 2);
-    const TOTAL_H = BASE_S + MARGIN + FOOTER;
+    const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+    const BASE_S = 2400, MARGIN = 160, FOOTER = 640;
+    const TOTAL_W = BASE_S + (MARGIN * 2), TOTAL_H = BASE_S + MARGIN + FOOTER;
 
-    // Buffer for iOS compatibility (Filters can be finicky on iOS canvases)
-    const bufferCanvas = document.createElement('canvas');
-    const bCtx = bufferCanvas.getContext('2d');
+    // Buffer for the processed inner photo
+    const buffer = document.createElement('canvas');
+    const bCtx = buffer.getContext('2d');
     
-    const noiseCanvas = document.createElement('canvas');
-    noiseCanvas.width = 512; 
-    noiseCanvas.height = 512;
-    const nCtx = noiseCanvas.getContext('2d');
-    const nData = nCtx.createImageData(512, 512);
-    for(let i=0; i<nData.data.length; i+=4) {
-        const v = Math.random() * 255;
-        nData.data[i] = v; nData.data[i+1] = v; nData.data[i+2] = v; nData.data[i+3] = 255;
+    // Noise buffer for film grain
+    const noiseBuffer = document.createElement('canvas');
+    const nCtx = noiseBuffer.getContext('2d');
+
+    function updateNoise() {
+        noiseBuffer.width = 512; noiseBuffer.height = 512;
+        const idata = nCtx.createImageData(512, 512);
+        for(let i=0; i<idata.data.length; i+=4) {
+            const v = Math.random() * 255;
+            idata.data[i] = v; idata.data[i+1] = v; idata.data[i+2] = v; idata.data[i+3] = 255;
+        }
+        nCtx.putImageData(idata, 0, 0);
     }
-    nCtx.putImageData(nData, 0, 0);
-    let noisePattern = null;
+    updateNoise();
 
-    let state = {
-        img: null,
-        x: 0, y: 0,
-        lastX: 0, lastY: 0,
-        isDragging: false,
-        isZooming: false
-    };
+    let state = { img: null, x: 0, y: 0, lastX: 0, lastY: 0, isDragging: false };
 
     const ui = {};
     ['zoom', 'rotation', 'bokeh', 'exposure', 'contrast', 'redChan', 'greenChan', 'blueChan', 'grain', 'markerText', 'textSize']
     .forEach(id => {
         ui[id] = document.getElementById(id);
-        ui[id].oninput = () => {
-            updateLabels();
-            draw(false);
-        };
+        ui[id].oninput = () => { updateLabels(); draw(false); };
     });
 
     function updateLabels() {
@@ -306,9 +239,6 @@
         document.getElementById('bokehVal').innerText = ui.bokeh.value;
         document.getElementById('expVal').innerText = ui.exposure.value + '%';
         document.getElementById('conVal').innerText = ui.contrast.value + '%';
-        document.getElementById('redVal').innerText = ui.redChan.value;
-        document.getElementById('greenVal').innerText = ui.greenChan.value;
-        document.getElementById('blueVal').innerText = ui.blueChan.value;
         document.getElementById('grainVal').innerText = ui.grain.value;
         document.getElementById('textSizeVal').innerText = parseFloat(ui.textSize.value).toFixed(1) + 'x';
     }
@@ -329,10 +259,8 @@
             img.onload = () => {
                 state.img = img;
                 state.x = 0; state.y = 0;
-                ui.zoom.value = 1.0;
-                updateLabels();
                 document.getElementById('emptyState').classList.add('hidden');
-                document.getElementById('zoomHint').classList.remove('hidden');
+                document.getElementById('inspectBtn').classList.remove('hidden');
                 draw(true);
             };
             img.src = v.target.result;
@@ -340,204 +268,150 @@
         reader.readAsDataURL(file);
     };
 
+    /** Manual Pixel Adjustment for Contrast/Brightness (Safari Compatibility) **/
+    function applyColorCorrection(context, w, h) {
+        const exp = parseFloat(ui.exposure.value) / 100;
+        const con = parseFloat(ui.contrast.value) / 100;
+        if(exp === 1 && con === 1) return;
+
+        const idata = context.getImageData(0, 0, w, h);
+        const d = idata.data;
+        const intercept = 128 * (1 - con);
+
+        for (let i = 0; i < d.length; i += 4) {
+            d[i] = (d[i] * exp) * con + intercept;
+            d[i+1] = (d[i+1] * exp) * con + intercept;
+            d[i+2] = (d[i+2] * exp) * con + intercept;
+        }
+        context.putImageData(idata, 0, 0);
+    }
+
     function draw(highRes = false) {
         if(!state.img) return;
+        // Optimization: Low-res for dragging, high-res for final result
+        const s = highRes ? 1 : (Math.min(window.innerWidth * 2.5, 900) / TOTAL_W);
+        canvas.width = TOTAL_W * s; canvas.height = TOTAL_H * s;
         
-        const s = highRes ? 1 : (Math.min(window.innerWidth * 2, 1000) / TOTAL_W);
-        canvas.width = TOTAL_W * s;
-        canvas.height = TOTAL_H * s;
-
-        // Reset context state for each draw to fix iOS artifacts
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.fillStyle = "#ffffff";
+        // 1. Draw the White Polaroid Frame
+        ctx.fillStyle = "#ffffff"; 
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        const m = MARGIN * s;
-        const b = BASE_S * s;
-        
-        const z = parseFloat(ui.zoom.value);
+        const m = MARGIN * s, b = BASE_S * s, z = parseFloat(ui.zoom.value);
         const r = parseInt(ui.rotation.value) * Math.PI / 180;
-        let dw, dh;
         const aspect = state.img.width / state.img.height;
-        if(aspect > 1) { dh = b * z; dw = dh * aspect; }
-        else { dw = b * z; dh = dw / aspect; }
+        let dw = aspect > 1 ? (b * z * aspect) : (b * z), dh = aspect > 1 ? (b * z) : (b * z / aspect);
 
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(m, m, b, b);
-        ctx.clip();
-
-        // COMPATIBILITY FIX: Apply filters to an offscreen buffer first
-        // This is much more reliable on mobile Safari
-        bufferCanvas.width = b;
-        bufferCanvas.height = b;
-        bCtx.clearRect(0, 0, b, b);
+        // 2. Prepare the Inner Photo (Correcting color/exposure first)
+        buffer.width = b; buffer.height = b;
+        bCtx.fillStyle = "#000"; bCtx.fillRect(0, 0, b, b);
         bCtx.save();
         bCtx.translate(b/2 + state.x * s, b/2 + state.y * s);
         bCtx.rotate(r);
-        
-        // Apply exposure and contrast via filter string
-        bCtx.filter = `brightness(${ui.exposure.value}%) contrast(${ui.contrast.value}%)`;
         bCtx.drawImage(state.img, -dw/2, -dh/2, dw, dh);
         bCtx.restore();
+        applyColorCorrection(bCtx, b, b);
 
-        // Draw the processed buffer onto main canvas
-        ctx.drawImage(bufferCanvas, m, m);
+        // 3. Render Photo with Edge Bokeh (Clipped to inner square)
+        ctx.save();
+        ctx.beginPath(); 
+        ctx.rect(m, m, b, b); 
+        ctx.clip(); // Ensure no blur bleeds onto the white frame
 
-        // Bokeh (Lens Blur) - Rendered over the top with a gradient mask
-        const bokehVal = parseFloat(ui.bokeh.value) * s;
-        if (bokehVal > 0) {
-            bCtx.clearRect(0, 0, b, b);
-            bCtx.save();
-            bCtx.translate(b/2 + state.x * s, b/2 + state.y * s);
-            bCtx.rotate(r);
-            bCtx.filter = `brightness(${ui.exposure.value}%) contrast(${ui.contrast.value}%) blur(${bokehVal}px)`;
-            bCtx.drawImage(state.img, -dw/2, -dh/2, dw, dh);
-            bCtx.restore();
+        const bokeh = parseFloat(ui.bokeh.value) * s;
+        if(bokeh > 1) {
+            // Step A: Draw Sharp Background (The Center)
+            ctx.drawImage(buffer, m, m);
 
-            // Create radial mask for focus point
-            bCtx.globalCompositeOperation = 'destination-out';
-            const gradRadius = b * 0.6;
-            const gradient = bCtx.createRadialGradient(b/2, b/2, 0, b/2, b/2, gradRadius);
-            gradient.addColorStop(0, 'rgba(0,0,0,1)');
-            gradient.addColorStop(0.3, 'rgba(0,0,0,1)');
-            gradient.addColorStop(0.9, 'rgba(0,0,0,0)');
-            bCtx.fillStyle = gradient;
-            bCtx.fillRect(0, 0, b, b);
+            // Step B: Draw Blurred Layer over it
+            ctx.save();
+            ctx.filter = `blur(${bokeh}px)`;
             
-            ctx.drawImage(bufferCanvas, m, m);
+            // We create a "Vignette Mask" where center is transparent and edges are opaque
+            const mask = document.createElement('canvas');
+            mask.width = b; mask.height = b;
+            const mCtx = mask.getContext('2d');
+            
+            // Draw blurred image onto mask
+            mCtx.drawImage(buffer, 0, 0);
+            
+            // Cut out center to reveal sharp layer below
+            mCtx.globalCompositeOperation = 'destination-in';
+            const grad = mCtx.createRadialGradient(b/2, b/2, 0, b/2, b/2, b/2);
+            grad.addColorStop(0.3, 'rgba(0,0,0,0)'); // Center stays sharp (transparent in blur layer)
+            grad.addColorStop(0.9, 'rgba(0,0,0,1)'); // Edges fully blurred
+            mCtx.fillStyle = grad;
+            mCtx.fillRect(0,0,b,b);
+            
+            ctx.drawImage(mask, m, m);
+            ctx.restore();
+        } else {
+            ctx.drawImage(buffer, m, m);
         }
 
-        // Tints
+        // 4. Chemical Tints & Film Grain (Inside Clip)
         ctx.globalCompositeOperation = 'overlay';
         ctx.fillStyle = `rgb(${128+parseInt(ui.redChan.value)}, ${128+parseInt(ui.greenChan.value)}, ${128+parseInt(ui.blueChan.value)})`;
         ctx.fillRect(m, m, b, b);
         
-        // Grain
-        if(ui.grain.value > 0) {
-            if(!noisePattern) noisePattern = ctx.createPattern(noiseCanvas, 'repeat');
-            ctx.globalAlpha = ui.grain.value / 100;
-            ctx.fillStyle = noisePattern;
+        const gVal = parseInt(ui.grain.value);
+        if(gVal > 0) {
+            ctx.globalCompositeOperation = 'soft-light';
+            ctx.globalAlpha = gVal / 200;
+            const ptrn = ctx.createPattern(noiseBuffer, 'repeat');
+            ctx.fillStyle = ptrn;
             ctx.fillRect(m, m, b, b);
         }
+        ctx.restore(); // END FRAME CLIPPING
 
-        ctx.restore();
-
-        // Annotation
+        // 5. Marker Annotation (Handwritten Text)
         if(ui.markerText.value) {
-            const sizeMultiplier = parseFloat(ui.textSize.value);
-            ctx.font = `${100 * s * sizeMultiplier}px 'Permanent Marker'`;
-            ctx.fillStyle = "rgba(20,20,40,0.8)";
+            const sm = parseFloat(ui.textSize.value);
+            ctx.font = `${100 * s * sm}px 'Permanent Marker'`;
+            ctx.fillStyle = "rgba(10,10,30,0.85)";
             ctx.textAlign = "center";
             ctx.save();
-            ctx.translate(canvas.width/2, (TOTAL_H - FOOTER/2 + (25 * sizeMultiplier)) * s);
+            ctx.translate(canvas.width/2, (TOTAL_H - FOOTER/2 + (30 * sm)) * s);
             ctx.rotate(-0.012);
             ctx.fillText(ui.markerText.value, 0, 0);
             ctx.restore();
         }
 
+        // Debounced high-res re-render
         if(!highRes) {
             clearTimeout(window.rTimer);
-            window.rTimer = setTimeout(() => draw(true), 400);
+            window.rTimer = setTimeout(() => draw(true), 300);
         }
     }
 
-    // Interactions
-    const viewport = document.getElementById('viewport');
-    const magnifier = document.getElementById('magnifier');
-    const magCanvas = document.getElementById('magCanvas');
-    const mCtx = magCanvas.getContext('2d');
-    let zoomTimer;
-
-    const getPos = (e) => {
+    // Touch/Mouse Event Handling for Image Dragging
+    const v = document.getElementById('viewport');
+    const handleMove = (e) => {
+        if(!state.isDragging || !state.img) return;
         const t = e.touches ? e.touches[0] : e;
-        const rect = canvas.getBoundingClientRect();
-        return {
-            x: (t.clientX - rect.left) * (canvas.width / rect.width),
-            y: (t.clientY - rect.top) * (canvas.height / rect.height),
-            screenX: t.clientX,
-            screenY: t.clientY
-        };
-    };
-
-    const startZoom = (e) => {
-        if(!state.img) return;
-        state.isZooming = true;
-        magnifier.style.display = 'block';
-        updateZoom(e);
-    };
-
-    const updateZoom = (e) => {
-        if(!state.isZooming) return;
-        const pos = getPos(e);
-        
-        // Position circle
-        magnifier.style.left = `${pos.screenX - 90}px`;
-        magnifier.style.top = `${pos.screenY - 200}px`;
-
-        // Render zoom content
-        magCanvas.width = 180;
-        magCanvas.height = 180;
-        mCtx.fillStyle = '#fff';
-        mCtx.fillRect(0,0,180,180);
-        
-        const zoomFactor = 2.5;
-        mCtx.drawImage(
-            canvas, 
-            pos.x - (90/zoomFactor), pos.y - (90/zoomFactor), 180/zoomFactor, 180/zoomFactor,
-            0, 0, 180, 180
-        );
-    };
-
-    viewport.addEventListener('mousedown', (e) => {
-        if(!state.img) return;
-        zoomTimer = setTimeout(() => startZoom(e), 250);
-        state.isDragging = true;
-        state.lastX = e.clientX; state.lastY = e.clientY;
-    });
-
-    viewport.addEventListener('touchstart', (e) => {
-        if(!state.img) return;
-        if(e.touches.length === 1) {
-            zoomTimer = setTimeout(() => startZoom(e), 400);
-            state.isDragging = true;
-            state.lastX = e.touches[0].clientX; state.lastY = e.touches[0].clientY;
-        }
-    }, {passive: false});
-
-    window.addEventListener('mousemove', (e) => {
-        if(state.isZooming) { updateZoom(e); return; }
-        if(!state.isDragging || !state.img) return;
-        clearTimeout(zoomTimer);
         const f = TOTAL_W / canvas.clientWidth;
-        state.x += (e.clientX - state.lastX) * f;
-        state.y += (e.clientY - state.lastY) * f;
-        state.lastX = e.clientX; state.lastY = e.clientY;
+        state.x += (t.clientX - state.lastX) * f;
+        state.y += (t.clientY - state.lastY) * f;
+        state.lastX = t.clientX; state.lastY = t.clientY;
         draw(false);
-    });
-
-    window.addEventListener('touchmove', (e) => {
-        if(state.isZooming) { e.preventDefault(); updateZoom(e); return; }
-        if(!state.isDragging || !state.img) return;
-        clearTimeout(zoomTimer);
-        const f = TOTAL_W / canvas.clientWidth;
-        state.x += (e.touches[0].clientX - state.lastX) * f;
-        state.y += (e.touches[0].clientY - state.lastY) * f;
-        state.lastX = e.touches[0].clientX; state.lastY = e.touches[0].clientY;
-        draw(false);
-    }, {passive: false});
-
-    const endAll = () => {
-        clearTimeout(zoomTimer);
-        state.isDragging = false;
-        state.isZooming = false;
-        magnifier.style.display = 'none';
     };
 
-    window.addEventListener('mouseup', endAll);
-    window.addEventListener('touchend', endAll);
+    v.addEventListener('mousedown', (e) => { state.isDragging = true; state.lastX = e.clientX; state.lastY = e.clientY; });
+    v.addEventListener('touchstart', (e) => { state.isDragging = true; state.lastX = e.touches[0].clientX; state.lastY = e.touches[0].clientY; }, {passive: false});
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('touchmove', (e) => { if(state.isDragging) e.preventDefault(); handleMove(e); }, {passive: false});
+    window.addEventListener('mouseup', () => state.isDragging = false);
+    window.addEventListener('touchend', () => state.isDragging = false);
 
-    // Save
+    // Preview and Save UI logic
+    function showPreview() {
+        if(!state.img) return;
+        draw(true);
+        const data = canvas.toDataURL('image/jpeg', 0.92);
+        document.getElementById('previewImg').src = data;
+        document.getElementById('previewOverlay').style.display = 'flex';
+    }
+    function hidePreview() { document.getElementById('previewOverlay').style.display = 'none'; }
+
     document.getElementById('exportBtn').addEventListener('click', function() {
         if(!state.img) return;
         const btn = this;
@@ -545,27 +419,23 @@
         btn.disabled = true;
 
         setTimeout(() => {
-            try {
-                draw(true); 
-                canvas.toBlob((blob) => {
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = `polaroid_${Date.now()}.jpg`;
-                    document.body.appendChild(link);
-                    link.click();
-                    setTimeout(() => {
-                        document.body.removeChild(link);
-                        window.URL.revokeObjectURL(url);
-                        btn.innerText = "Save Polaroid";
-                        btn.disabled = false;
-                    }, 100);
-                }, 'image/jpeg', 0.95);
-            } catch (e) {
-                btn.innerText = "Error Saving";
-                setTimeout(() => { btn.innerText = "Save Polaroid"; btn.disabled = false; }, 2000);
-            }
-        }, 150);
+            draw(true);
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `polaroid_studio_${Date.now()}.jpg`;
+                document.body.appendChild(link);
+                link.click();
+                showPreview(); // Trigger full preview for long-press saving on iOS
+                setTimeout(() => {
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                    btn.innerText = "Save Polaroid";
+                    btn.disabled = false;
+                }, 100);
+            }, 'image/jpeg', 0.95);
+        }, 100);
     });
 </script>
 </body>
