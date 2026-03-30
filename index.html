@@ -178,14 +178,14 @@
                 <input type="range" id="grain" min="0" max="250" value="30">
             </div>
             <div class="control-group">
-                <div class="control-label"><span>Photo Gloss (Shine)</span><span class="control-val" id="glossVal">0</span></div>
+                <div class="control-label"><span>Real Gloss Shine</span><span class="control-val" id="glossVal">0</span></div>
                 <input type="range" id="gloss" min="0" max="100" value="0">
             </div>
             <input type="text" id="markerText" placeholder="Marker scribble..." 
                 class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 mb-4 text-white marker-font outline-none text-lg">
             <div class="control-group">
                 <div class="control-label"><span>Text Scale</span><span class="control-val" id="textSizeVal">1.0x</span></div>
-                <input type="range" id="textSize" min="0.5" max="3" step="0.1" value="1.0">
+                <input type="range" id="textSize" min="0.5" max="6" step="0.1" value="1.0">
             </div>
         </div>
 
@@ -301,6 +301,7 @@
         const aspect = state.img.width / state.img.height;
         let dw = aspect > 1 ? (b * z * aspect) : (b * z), dh = aspect > 1 ? (b * z) : (b * z / aspect);
 
+        // BUFFER PREPARATION
         buffer.width = b; buffer.height = b;
         bCtx.fillStyle = "#000"; bCtx.fillRect(0, 0, b, b);
         bCtx.save();
@@ -310,39 +311,48 @@
         bCtx.restore();
         applyColorCorrection(bCtx, b, b);
 
-        // Render Photo with Edge Bokeh
+        // BOKEH
+        const bokeh = parseFloat(ui.bokeh.value);
+        if(bokeh > 1) {
+            const blurBuffer = document.createElement('canvas');
+            blurBuffer.width = b; blurBuffer.height = b;
+            const blurCtx = blurBuffer.getContext('2d');
+            blurCtx.filter = `blur(${bokeh}px)`;
+            blurCtx.drawImage(buffer, 0, 0);
+            
+            const mask = document.createElement('canvas');
+            mask.width = b; mask.height = b;
+            const mCtx = mask.getContext('2d');
+            const grad = mCtx.createRadialGradient(b/2, b/2, 0, b/2, b/2, b/2);
+            grad.addColorStop(0.35, 'rgba(0,0,0,0)'); 
+            grad.addColorStop(0.85, 'rgba(0,0,0,1)');
+            mCtx.fillStyle = grad;
+            mCtx.fillRect(0,0,b,b);
+
+            bCtx.save();
+            bCtx.globalCompositeOperation = 'source-over';
+            const finalBlur = document.createElement('canvas');
+            finalBlur.width = b; finalBlur.height = b;
+            const fbCtx = finalBlur.getContext('2d');
+            fbCtx.drawImage(blurBuffer, 0, 0);
+            fbCtx.globalCompositeOperation = 'destination-in';
+            fbCtx.drawImage(mask, 0, 0);
+            bCtx.drawImage(finalBlur, 0, 0);
+            bCtx.restore();
+        }
+
+        // PHOTO AREA
         ctx.save();
         ctx.beginPath(); 
         ctx.rect(m, m, b, b); 
         ctx.clip(); 
+        ctx.drawImage(buffer, m, m);
 
-        const bokeh = parseFloat(ui.bokeh.value) * s;
-        if(bokeh > 1) {
-            ctx.drawImage(buffer, m, m);
-            ctx.save();
-            ctx.filter = `blur(${bokeh}px)`;
-            const mask = document.createElement('canvas');
-            mask.width = b; mask.height = b;
-            const mCtx = mask.getContext('2d');
-            mCtx.drawImage(buffer, 0, 0);
-            mCtx.globalCompositeOperation = 'destination-in';
-            const grad = mCtx.createRadialGradient(b/2, b/2, 0, b/2, b/2, b/2);
-            grad.addColorStop(0.3, 'rgba(0,0,0,0)'); 
-            grad.addColorStop(0.9, 'rgba(0,0,0,1)'); 
-            mCtx.fillStyle = grad;
-            mCtx.fillRect(0,0,b,b);
-            ctx.drawImage(mask, m, m);
-            ctx.restore();
-        } else {
-            ctx.drawImage(buffer, m, m);
-        }
-
-        // Apply Grain
+        // GRAIN
         const gVal = parseInt(ui.grain.value);
         if(gVal > 0) {
             ctx.save();
             ctx.globalCompositeOperation = 'soft-light';
-            // Increased power of grain alpha
             ctx.globalAlpha = Math.min(1.0, gVal / 100);
             const ptrn = ctx.createPattern(noiseBuffer, 'repeat');
             ctx.fillStyle = ptrn;
@@ -350,24 +360,44 @@
             ctx.restore();
         }
 
-        // Apply Shine/Gloss
+        // IMPROVED REAL GLOSS
         const glossVal = parseInt(ui.gloss.value);
         if(glossVal > 0) {
             ctx.save();
-            ctx.globalAlpha = glossVal / 100;
-            const glossGrad = ctx.createLinearGradient(m, m, m + b, m + b);
-            glossGrad.addColorStop(0, 'rgba(255,255,255,0.4)');
-            glossGrad.addColorStop(0.2, 'rgba(255,255,255,0.1)');
-            glossGrad.addColorStop(0.5, 'rgba(255,255,255,0)');
-            glossGrad.addColorStop(0.8, 'rgba(255,255,255,0.05)');
-            glossGrad.addColorStop(1, 'rgba(255,255,255,0.15)');
-            ctx.fillStyle = glossGrad;
+            const alpha = glossVal / 100;
+            
+            // 1. Soft environmental reflection (broad diagonal)
+            ctx.globalAlpha = alpha * 0.3;
+            const envGrad = ctx.createLinearGradient(m, m, m + b, m + b);
+            envGrad.addColorStop(0, 'white');
+            envGrad.addColorStop(0.3, 'rgba(255,255,255,0.2)');
+            envGrad.addColorStop(0.6, 'rgba(255,255,255,0)');
+            envGrad.addColorStop(1, 'rgba(255,255,255,0.1)');
+            ctx.fillStyle = envGrad;
             ctx.fillRect(m, m, b, b);
+
+            // 2. High-intensity Studio Hot Spot (Top left)
+            ctx.globalAlpha = alpha * 0.6;
+            const hotSpot = ctx.createRadialGradient(m + b*0.2, m + b*0.15, 0, m + b*0.2, m + b*0.15, b*0.4);
+            hotSpot.addColorStop(0, 'rgba(255,255,255,0.8)');
+            hotSpot.addColorStop(0.2, 'rgba(255,255,255,0.4)');
+            hotSpot.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = hotSpot;
+            ctx.fillRect(m, m, b, b);
+
+            // 3. Secondary Rim Reflection (Lower right)
+            ctx.globalAlpha = alpha * 0.2;
+            const rimSpot = ctx.createRadialGradient(m + b*0.85, m + b*0.9, 0, m + b*0.85, m + b*0.9, b*0.2);
+            rimSpot.addColorStop(0, 'rgba(255,255,255,0.5)');
+            rimSpot.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = rimSpot;
+            ctx.fillRect(m, m, b, b);
+
             ctx.restore();
         }
         ctx.restore(); 
 
-        // Visual crop guide during interaction
+        // GUIDES
         if(state.isDragging && !highRes) {
             ctx.save();
             ctx.translate(m + b/2 + state.x * s, m + b/2 + state.y * s);
@@ -379,6 +409,7 @@
             ctx.restore();
         }
 
+        // TEXT
         if(ui.markerText.value) {
             const sm = parseFloat(ui.textSize.value);
             ctx.font = `${100 * s * sm}px 'Permanent Marker'`;
