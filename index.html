@@ -11,8 +11,8 @@
         :root {
             --accent: #3b82f6;
             --bg: #050505;
-            --panel: rgba(18, 18, 20, 0.8);
-            --safe-bottom: env(safe-area-inset-bottom);
+            --panel: rgba(18, 18, 20, 0.85);
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
         }
 
         body {
@@ -21,36 +21,40 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             margin: 0;
             overflow: hidden;
-            height: 100vh;
+            height: 100dvh; 
             display: flex;
             flex-direction: column;
         }
 
-        /* Enlagred Viewport for better visibility */
         .viewport {
-            flex: 1.8;
+            flex: 1;
+            min-height: 0; 
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 10px;
+            padding: 12px;
             background: radial-gradient(circle at 50% 40%, #1a1a1e 0%, #050505 100%);
             position: relative;
         }
 
         canvas {
             max-width: 100%;
-            max-height: 98%;
+            max-height: 100%;
             box-shadow: 0 40px 100px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05);
             background: #fff;
             touch-action: none;
             border-radius: 2px;
+            object-fit: contain;
         }
 
-        /* Compact Control Stack */
         .controls {
-            flex: 0.8;
+            flex-shrink: 0;
+            height: 45dvh;
+            min-height: 320px;
+            max-height: 450px;
             background: var(--panel);
             backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
             border-top: 1px solid rgba(255,255,255,0.08);
             border-top-left-radius: 32px;
             border-top-right-radius: 32px;
@@ -62,18 +66,18 @@
 
         .tab-bar {
             display: flex;
-            padding: 16px 24px 8px;
-            gap: 20px;
+            padding: 20px 24px 10px;
+            gap: 24px;
         }
 
         .tab-btn {
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            color: #555;
+            color: #666;
             position: relative;
-            padding-bottom: 8px;
+            padding-bottom: 10px;
             transition: color 0.3s;
         }
 
@@ -87,53 +91,54 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 2px;
+            height: 3px;
             background: var(--accent);
-            border-radius: 2px;
+            border-radius: 3px;
         }
 
         .settings-pane {
             flex: 1;
             overflow-y: auto;
-            padding: 8px 24px;
+            padding: 12px 24px 20px;
             -webkit-overflow-scrolling: touch;
         }
 
-        /* Custom RGB Sliders - Compact */
         input[type=range] {
             -webkit-appearance: none;
             width: 100%;
-            height: 6px;
-            border-radius: 3px;
+            height: 14px;
+            border-radius: 7px;
             outline: none;
-            margin: 8px 0;
-            background: #222;
+            margin: 16px 0 24px 0;
+            background: #2a2a2e;
         }
 
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 36px;
+            height: 36px;
             background: #fff;
             border-radius: 50%;
             border: 4px solid #000;
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
             cursor: pointer;
         }
 
-        #redChan { background: linear-gradient(to right, #000, #ff4444); }
-        #greenChan { background: linear-gradient(to right, #000, #22c55e); }
-        #blueChan { background: linear-gradient(to right, #000, #3b82f6); }
+        #redChan { background: linear-gradient(to right, #2a2a2e, #ff4444); }
+        #greenChan { background: linear-gradient(to right, #2a2a2e, #22c55e); }
+        #blueChan { background: linear-gradient(to right, #2a2a2e, #3b82f6); }
 
         .control-label {
             display: flex;
             justify-content: space-between;
-            font-size: 10px;
-            font-weight: 700;
-            color: #888;
+            font-size: 11px;
+            font-weight: 800;
+            color: #aaa;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
         }
+
+        .control-val { color: #fff; font-weight: 600; }
 
         .btn-main {
             background: #fff;
@@ -141,20 +146,14 @@
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1px;
-            padding: 14px;
-            border-radius: 14px;
-            font-size: 12px;
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 13px;
             transition: transform 0.1s;
+            box-shadow: 0 4px 15px rgba(255,255,255,0.1);
         }
 
         .btn-main:active { transform: scale(0.96); }
-
-        .btn-main:disabled {
-            background: #666;
-            color: #aaa;
-            transform: none;
-        }
-
         .marker-font { font-family: 'Permanent Marker', cursive; }
     </style>
 </head>
@@ -162,11 +161,11 @@
 
     <div class="viewport" id="viewport">
         <canvas id="mainCanvas"></canvas>
-        <div id="emptyState" class="absolute flex flex-col items-center opacity-40">
-            <div class="w-16 h-16 border-2 border-dashed border-white/20 rounded-full flex items-center justify-center mb-4">
-                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        <div id="emptyState" class="absolute flex flex-col items-center opacity-40 pointer-events-none">
+            <div class="w-20 h-20 border-2 border-dashed border-white/30 rounded-full flex items-center justify-center mb-4">
+                <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
             </div>
-            <p class="text-[9px] font-bold uppercase tracking-[0.3em]">Load Negative</p>
+            <p class="text-[11px] font-bold uppercase tracking-[0.3em]">Load Negative</p>
         </div>
     </div>
 
@@ -178,67 +177,65 @@
         </div>
 
         <div class="settings-pane" id="opticsPane">
-            <div class="mb-3">
-                <div class="control-label"><span>Magnification</span><span id="zoomVal">1.0x</span></div>
+            <div>
+                <div class="control-label"><span>Magnification</span><span class="control-val" id="zoomVal">1.0x</span></div>
                 <input type="range" id="zoom" min="0.5" max="3.5" step="0.01" value="1.0">
             </div>
-            <div class="mb-3">
-                <div class="control-label"><span>Orientation</span><span id="rotVal">0°</span></div>
+            <div>
+                <div class="control-label"><span>Orientation</span><span class="control-val" id="rotVal">0°</span></div>
                 <input type="range" id="rotation" min="-180" max="180" value="0">
             </div>
-            <div class="mb-3">
-                <div class="control-label"><span>Bokeh (Radial Softness)</span></div>
-                <input type="range" id="bokeh" min="0" max="60" value="0">
+            <div>
+                <div class="control-label"><span>Bokeh (Lens Blur)</span><span class="control-val" id="bokehVal">0</span></div>
+                <input type="range" id="bokeh" min="0" max="80" value="0">
             </div>
         </div>
 
         <div class="settings-pane hidden" id="colorPane">
-            <div class="mb-2">
-                <div class="control-label"><span>Red Balance</span></div>
+            <div>
+                <div class="control-label"><span>Exposure</span><span class="control-val" id="expVal">100%</span></div>
+                <input type="range" id="exposure" min="40" max="160" value="100">
+            </div>
+            <div>
+                <div class="control-label"><span>Contrast</span><span class="control-val" id="conVal">100%</span></div>
+                <input type="range" id="contrast" min="40" max="160" value="100">
+            </div>
+            <div class="mt-4">
+                <div class="control-label"><span>Red Balance</span><span class="control-val" id="redVal">0</span></div>
                 <input type="range" id="redChan" min="-60" max="60" value="0">
             </div>
-            <div class="mb-2">
-                <div class="control-label"><span>Green Balance</span></div>
+            <div>
+                <div class="control-label"><span>Green Balance</span><span class="control-val" id="greenVal">0</span></div>
                 <input type="range" id="greenChan" min="-60" max="60" value="0">
             </div>
-            <div class="mb-2">
-                <div class="control-label"><span>Blue Balance</span></div>
+            <div>
+                <div class="control-label"><span>Blue Balance</span><span class="control-val" id="blueVal">0</span></div>
                 <input type="range" id="blueChan" min="-60" max="60" value="0">
-            </div>
-            <div class="flex gap-4 mt-2">
-                <div class="flex-1">
-                    <div class="control-label"><span>Exposure</span></div>
-                    <input type="range" id="exposure" min="40" max="160" value="100">
-                </div>
-                <div class="flex-1">
-                    <div class="control-label"><span>Contrast</span></div>
-                    <input type="range" id="contrast" min="40" max="160" value="100">
-                </div>
             </div>
         </div>
 
         <div class="settings-pane hidden" id="finishPane">
-            <div class="mb-3">
-                <div class="control-label"><span>Film Grain Intensity</span></div>
+            <div>
+                <div class="control-label"><span>Film Grain Intensity</span><span class="control-val" id="grainVal">15</span></div>
                 <input type="range" id="grain" min="0" max="100" value="15">
             </div>
-            <div class="mb-3">
+            <div class="mt-2">
                 <div class="control-label"><span>Marker Annotation</span></div>
                 <input type="text" id="markerText" placeholder="Write on border..." 
-                    class="w-full bg-white/5 border border-white/10 rounded-xl p-3 mt-1 text-white marker-font outline-none focus:border-blue-500/50">
+                    class="w-full bg-white/5 border border-white/10 rounded-xl p-4 mt-3 mb-6 text-white marker-font outline-none focus:border-blue-500/50 text-lg">
             </div>
-            <div class="mb-1">
-                <div class="control-label"><span>Text Size</span></div>
+            <div>
+                <div class="control-label"><span>Text Size</span><span class="control-val" id="textSizeVal">1.0x</span></div>
                 <input type="range" id="textSize" min="0.5" max="3" step="0.1" value="1.0">
             </div>
         </div>
 
-        <div class="p-4 flex gap-4">
+        <div class="p-5 flex gap-4 mt-auto border-t border-white/5">
             <label class="flex-1">
-                <div class="w-full py-4 bg-white/5 border border-white/10 text-center rounded-xl font-bold text-[10px] uppercase tracking-widest active:bg-white/10 cursor-pointer">Import</div>
+                <div class="w-full h-full flex items-center justify-center bg-white/5 border border-white/10 rounded-2xl font-bold text-[11px] uppercase tracking-widest active:bg-white/10 cursor-pointer transition-colors">Import</div>
                 <input type="file" id="imgInput" accept="image/*" class="hidden">
             </label>
-            <button id="exportBtn" class="btn-main flex-[2]">Develop & Save</button>
+            <button id="exportBtn" class="btn-main flex-[2]">Save Polaroid</button>
         </div>
     </div>
 
@@ -246,18 +243,16 @@
     const canvas = document.getElementById('mainCanvas');
     const ctx = canvas.getContext('2d', { alpha: false });
     
-    // Pro Dimensions
+    // Internal High-Res Dimensions
     const BASE_S = 2400;
     const MARGIN = 160;
     const FOOTER = 640;
     const TOTAL_W = BASE_S + (MARGIN * 2);
     const TOTAL_H = BASE_S + MARGIN + FOOTER;
 
-    // Performance Canvases for advanced effects
     const bokehCanvas = document.createElement('canvas');
     const bCtx = bokehCanvas.getContext('2d');
 
-    // Powerful static noise generation for film grain
     const noiseCanvas = document.createElement('canvas');
     noiseCanvas.width = 512; 
     noiseCanvas.height = 512;
@@ -265,10 +260,7 @@
     const imgData = nCtx.createImageData(512, 512);
     for(let i=0; i<imgData.data.length; i+=4) {
         const v = Math.random() * 255;
-        imgData.data[i] = v;
-        imgData.data[i+1] = v;
-        imgData.data[i+2] = v;
-        imgData.data[i+3] = 255;
+        imgData.data[i] = v; imgData.data[i+1] = v; imgData.data[i+2] = v; imgData.data[i+3] = 255;
     }
     nCtx.putImageData(imgData, 0, 0);
     let noisePattern = null;
@@ -282,11 +274,20 @@
 
     const ctrlIds = ['zoom', 'rotation', 'bokeh', 'exposure', 'contrast', 'redChan', 'greenChan', 'blueChan', 'grain', 'markerText', 'textSize'];
     const ui = {};
+    
     ctrlIds.forEach(id => {
         ui[id] = document.getElementById(id);
         ui[id].oninput = () => {
             if(id === 'zoom') document.getElementById('zoomVal').innerText = parseFloat(ui.zoom.value).toFixed(1) + 'x';
             if(id === 'rotation') document.getElementById('rotVal').innerText = ui.rotation.value + '°';
+            if(id === 'bokeh') document.getElementById('bokehVal').innerText = ui.bokeh.value;
+            if(id === 'exposure') document.getElementById('expVal').innerText = ui.exposure.value + '%';
+            if(id === 'contrast') document.getElementById('conVal').innerText = ui.contrast.value + '%';
+            if(id === 'redChan') document.getElementById('redVal').innerText = ui.redChan.value;
+            if(id === 'greenChan') document.getElementById('greenVal').innerText = ui.greenChan.value;
+            if(id === 'blueChan') document.getElementById('blueVal').innerText = ui.blueChan.value;
+            if(id === 'grain') document.getElementById('grainVal').innerText = ui.grain.value;
+            if(id === 'textSize') document.getElementById('textSizeVal').innerText = parseFloat(ui.textSize.value).toFixed(1) + 'x';
             draw(false);
         };
     });
@@ -321,24 +322,18 @@
         if(!state.img) return;
         if(!noisePattern) noisePattern = ctx.createPattern(noiseCanvas, 'repeat');
         
+        // s is scale factor. 1 for full resolution, smaller for screen preview.
         const s = highRes ? 1 : (800 / TOTAL_W);
         canvas.width = TOTAL_W * s;
         canvas.height = TOTAL_H * s;
 
-        // Base Layer - White Polaroid Paper
+        // Draw Frame
         ctx.fillStyle = "#fff";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         const m = MARGIN * s;
         const b = BASE_S * s;
         
-        // Setup Clipping for the Photo Area
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(m, m, b, b);
-        ctx.clip();
-
-        // Image Engine Variables
         const z = parseFloat(ui.zoom.value);
         const r = parseInt(ui.rotation.value) * Math.PI / 180;
         let dw, dh;
@@ -347,201 +342,186 @@
         if(aspect > 1) { dh = b * z; dw = dh * aspect; }
         else { dw = b * z; dh = dw / aspect; }
 
-        // Center Coordinate System
-        ctx.translate(m + b/2 + state.x * s, m + b/2 + state.y * s);
-        ctx.rotate(r);
-
         const bokehVal = parseFloat(ui.bokeh.value) * s;
 
-        // Draw Sharp Base Image
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(m, m, b, b);
+        ctx.clip();
+
+        // Image content
+        ctx.save();
+        ctx.translate(m + b/2 + state.x * s, m + b/2 + state.y * s);
+        ctx.rotate(r);
         ctx.filter = `brightness(${ui.exposure.value}%) contrast(${ui.contrast.value}%)`;
         ctx.drawImage(state.img, -dw/2, -dh/2, dw, dh);
         ctx.filter = 'none';
+        ctx.restore();
 
-        // Advanced Radial Bokeh Effect
+        // Lens Blur implementation
         if (bokehVal > 0) {
-            // Resize performance canvas only if necessary
-            if (bokehCanvas.width !== Math.floor(dw) || bokehCanvas.height !== Math.floor(dh)) {
-                bokehCanvas.width = Math.floor(dw);
-                bokehCanvas.height = Math.floor(dh);
+            if (bokehCanvas.width !== Math.floor(b) || bokehCanvas.height !== Math.floor(b)) {
+                bokehCanvas.width = Math.floor(b);
+                bokehCanvas.height = Math.floor(b);
             } else {
-                bCtx.clearRect(0, 0, dw, dh);
+                bCtx.clearRect(0, 0, b, b);
             }
 
-            // Draw completely blurred image to offscreen canvas
+            bCtx.save();
+            bCtx.translate(b/2 + state.x * s, b/2 + state.y * s);
+            bCtx.rotate(r);
             bCtx.filter = `brightness(${ui.exposure.value}%) contrast(${ui.contrast.value}%) blur(${bokehVal}px)`;
-            bCtx.drawImage(state.img, 0, 0, dw, dh);
-            bCtx.filter = 'none';
+            bCtx.drawImage(state.img, -dw/2, -dh/2, dw, dh);
+            bCtx.restore();
 
-            // Punch a transparent hole in the center to reveal the sharp image underneath
             bCtx.globalCompositeOperation = 'destination-out';
-            const cx = dw / 2;
-            const cy = dh / 2;
-            const gradRadius = Math.min(dw, dh) * 0.45; // Size of the sharp area
-            
-            const gradient = bCtx.createRadialGradient(cx, cy, 0, cx, cy, gradRadius);
-            gradient.addColorStop(0, 'rgba(0,0,0,1)'); // Fully erase center (sharp)
-            gradient.addColorStop(0.3, 'rgba(0,0,0,1)'); // Keep sharp
-            gradient.addColorStop(1, 'rgba(0,0,0,0)'); // Blend into blur at edges
-            
+            const gradRadius = b * 0.6;
+            const gradient = bCtx.createRadialGradient(b/2, b/2, 0, b/2, b/2, gradRadius);
+            gradient.addColorStop(0, 'rgba(0,0,0,1)');
+            gradient.addColorStop(0.35, 'rgba(0,0,0,1)');
+            gradient.addColorStop(0.85, 'rgba(0,0,0,0)');
             bCtx.fillStyle = gradient;
-            bCtx.fillRect(0, 0, dw, dh);
-            bCtx.globalCompositeOperation = 'source-over'; // Reset
-
-            // Apply offscreen canvas onto main canvas
-            ctx.drawImage(bokehCanvas, -dw/2, -dh/2, dw, dh);
+            bCtx.fillRect(0, 0, b, b);
+            bCtx.globalCompositeOperation = 'source-over';
+            ctx.drawImage(bokehCanvas, m, m, b, b);
         }
 
-        // RGB Chemical Balance (Overlay)
+        // Color Tints
         ctx.globalCompositeOperation = 'overlay';
         ctx.fillStyle = `rgb(${128+parseInt(ui.redChan.value)}, ${128+parseInt(ui.greenChan.value)}, ${128+parseInt(ui.blueChan.value)})`;
-        ctx.fillRect(-dw, -dh, dw*2, dh*2);
+        ctx.fillRect(m, m, b, b);
         ctx.globalCompositeOperation = 'source-over';
 
-        ctx.restore(); // Exit clipped & transformed photo area
-
-        // Powerful Film Grain (Applied only to the photo square)
+        // Grain
         if(ui.grain.value > 0) {
-            ctx.save();
-            ctx.beginPath();
-            ctx.rect(m, m, b, b);
-            ctx.clip();
-            
             ctx.globalCompositeOperation = 'overlay';
-            ctx.globalAlpha = ui.grain.value / 100; // 0 to 1 intensity
+            ctx.globalAlpha = ui.grain.value / 100;
             ctx.fillStyle = noisePattern;
             ctx.fillRect(m, m, b, b);
-            ctx.restore();
+            ctx.globalAlpha = 1.0;
+            ctx.globalCompositeOperation = 'source-over';
         }
 
-        // High-Quality Typography
+        ctx.restore();
+
+        // Text Annotation
         if(ui.markerText.value) {
             const sizeMultiplier = parseFloat(ui.textSize.value);
             ctx.font = `${100 * s * sizeMultiplier}px 'Permanent Marker'`;
             ctx.fillStyle = "rgba(15,15,30,0.85)";
             ctx.textAlign = "center";
             ctx.save();
-            // Position text in the middle of the bottom footer
             ctx.translate(canvas.width/2, (TOTAL_H - FOOTER/2 + (25 * sizeMultiplier)) * s);
-            ctx.rotate(-0.015); // Slight tilt for hand-written feel
+            ctx.rotate(-0.015);
             ctx.fillText(ui.markerText.value, 0, 0);
             ctx.restore();
         }
 
-        // Auto high-res generation after interactions end
+        // Deferred high-res render for smooth UI
         if(!highRes) {
             clearTimeout(window.rTimer);
-            window.rTimer = setTimeout(() => draw(true), 300);
+            window.rTimer = setTimeout(() => draw(true), 400);
         }
     }
 
-    // --- Interactive Mouse & Touch Manipulation ---
     const viewport = document.getElementById('viewport');
     let initialPinchDist = 0;
     let initialZoom = 1;
 
-    // Mouse Wheel Zoom
-    viewport.addEventListener('wheel', (e) => {
-        if(!state.img) return;
-        e.preventDefault();
-        let z = parseFloat(ui.zoom.value);
-        z -= e.deltaY * 0.002; // Adjust scroll speed
-        z = Math.max(0.5, Math.min(3.5, z)); // Clamp zoom
-        ui.zoom.value = z;
-        document.getElementById('zoomVal').innerText = z.toFixed(1) + 'x';
-        draw(false);
-    }, {passive: false});
-
-    // Mouse / Touch Start
     viewport.addEventListener('mousedown', (e) => {
         if(!state.img) return;
         state.isDragging = true;
-        state.lastX = e.clientX;
-        state.lastY = e.clientY;
+        state.lastX = e.clientX; state.lastY = e.clientY;
     });
 
     viewport.addEventListener('touchstart', (e) => {
         if(!state.img) return;
         if(e.touches.length === 2) {
             e.preventDefault();
-            initialPinchDist = Math.hypot(
-                e.touches[0].clientX - e.touches[1].clientX,
-                e.touches[0].clientY - e.touches[1].clientY
-            );
+            initialPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
             initialZoom = parseFloat(ui.zoom.value);
             state.isDragging = false;
         } else if (e.touches.length === 1) {
-            e.preventDefault();
             state.isDragging = true;
-            state.lastX = e.touches[0].clientX;
-            state.lastY = e.touches[0].clientY;
+            state.lastX = e.touches[0].clientX; state.lastY = e.touches[0].clientY;
         }
     }, {passive: false});
 
-    // Mouse / Touch Move
     window.addEventListener('mousemove', (e) => {
         if(!state.isDragging || !state.img) return;
         const f = TOTAL_W / canvas.clientWidth;
         state.x += (e.clientX - state.lastX) * f;
         state.y += (e.clientY - state.lastY) * f;
-        state.lastX = e.clientX;
-        state.lastY = e.clientY;
+        state.lastX = e.clientX; state.lastY = e.clientY;
         draw(false);
     });
 
     window.addEventListener('touchmove', (e) => {
         if(!state.img) return;
-        
         if(e.touches.length === 2 && initialPinchDist > 0) {
             e.preventDefault();
-            const currentDist = Math.hypot(
-                e.touches[0].clientX - e.touches[1].clientX,
-                e.touches[0].clientY - e.touches[1].clientY
-            );
-            let z = initialZoom * (currentDist / initialPinchDist);
-            z = Math.max(0.5, Math.min(3.5, z));
+            const currentDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            let z = Math.max(0.5, Math.min(3.5, initialZoom * (currentDist / initialPinchDist)));
             ui.zoom.value = z;
             document.getElementById('zoomVal').innerText = z.toFixed(1) + 'x';
             draw(false);
         } else if(e.touches.length === 1 && state.isDragging) {
-            e.preventDefault();
             const f = TOTAL_W / canvas.clientWidth;
             state.x += (e.touches[0].clientX - state.lastX) * f;
             state.y += (e.touches[0].clientY - state.lastY) * f;
-            state.lastX = e.touches[0].clientX;
-            state.lastY = e.touches[0].clientY;
+            state.lastX = e.touches[0].clientX; state.lastY = e.touches[0].clientY;
             draw(false);
         }
     }, {passive: false});
 
-    // Mouse / Touch End
     window.addEventListener('mouseup', () => state.isDragging = false);
-    window.addEventListener('touchend', (e) => {
-        if(e.touches.length < 2) initialPinchDist = 0;
-        if(e.touches.length === 0) state.isDragging = false;
-    });
+    window.addEventListener('touchend', () => { initialPinchDist = 0; state.isDragging = false; });
 
-    // Direct Device Download
-    exportBtn.onclick = () => {
+    // --- SAVE LOGIC ---
+    document.getElementById('exportBtn').addEventListener('click', function() {
         if(!state.img) return;
         
-        const originalText = exportBtn.innerText;
-        exportBtn.innerText = "DEVELOPING...";
-        exportBtn.disabled = true;
+        const btn = document.getElementById('exportBtn');
+        const originalText = btn.innerText;
+        btn.innerText = "DEVELOPING...";
+        btn.disabled = true;
 
-        // Allow UI to update text before freezing the thread with high-res render
+        // We run this in a timeout so the UI text can update before the CPU freezes to draw 2400x3200
         setTimeout(() => {
-            draw(true); // Force high-res calculation
-            
-            const link = document.createElement('a');
-            link.download = `polaroid_${new Date().getTime()}.jpg`;
-            link.href = canvas.toDataURL('image/jpeg', 0.95);
-            link.click();
-            
-            exportBtn.innerText = originalText;
-            exportBtn.disabled = false;
-        }, 50);
-    };
+            try {
+                // Ensure we have a high-res version on the canvas
+                draw(true); 
+
+                // Use toBlob for better cross-device reliability than toDataURL
+                canvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `polaroid_${Date.now()}.jpg`;
+                    
+                    // Critical for some mobile browsers
+                    document.body.appendChild(link);
+                    link.click();
+                    
+                    // Cleanup
+                    setTimeout(() => {
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(url);
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                    }, 100);
+                }, 'image/jpeg', 0.95);
+
+            } catch (err) {
+                console.error("Save error:", err);
+                btn.innerText = "ERROR";
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                }, 2000);
+            }
+        }, 100);
+    });
 </script>
 </body>
 </html>
