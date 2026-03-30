@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Polaroid Studio 2026</title>
+    <title>Polaroid 600 SE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Permanent+Marker&family=JetBrains+Mono:wght@500&display=swap');
@@ -48,8 +48,8 @@
 
         .controls {
             flex-shrink: 0;
-            height: 38dvh;
-            min-height: 340px;
+            height: 42dvh;
+            min-height: 380px;
             background: var(--panel);
             backdrop-filter: blur(40px);
             -webkit-backdrop-filter: blur(40px);
@@ -103,6 +103,23 @@
         #redChan { background: linear-gradient(to right, #330000, #ff0000); }
         #greenChan { background: linear-gradient(to right, #003300, #00ff00); }
         #blueChan { background: linear-gradient(to right, #000033, #0000ff); }
+        
+        .filter-btn {
+            flex: 1;
+            padding: 10px 4px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #666;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .filter-btn.active {
+            background: #fff;
+            color: #000;
+        }
 
         .control-label { display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; color: #777; text-transform: uppercase; }
         .control-val { color: #fff; }
@@ -126,7 +143,10 @@
     <div class="viewport" id="viewport">
         <canvas id="mainCanvas"></canvas>
         <div id="emptyState" class="absolute flex flex-col items-center opacity-20 pointer-events-none">
-            <p class="text-[10px] font-bold uppercase tracking-[0.4em]">Negative Required</p>
+            <div class="mb-4">
+                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 17l5-5 4 4 4-8 5 8"/></svg>
+            </div>
+            <p class="text-[10px] font-bold uppercase tracking-[0.4em]">Polaroid 600 System</p>
         </div>
         <button onclick="showPreview()" id="inspectBtn" class="absolute bottom-6 right-6 w-14 h-14 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-center hidden active:scale-90 transition-transform">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
@@ -137,7 +157,7 @@
         <div class="tab-bar">
             <button class="tab-btn active" onclick="switchTab('optics', this)">Photo</button>
             <button class="tab-btn" onclick="switchTab('color', this)">Chemicals</button>
-            <button class="tab-btn" onclick="switchTab('finish', this)">Final Touch</button>
+            <button class="tab-btn" onclick="switchTab('finish', this)">Finalize</button>
         </div>
 
         <div class="settings-pane" id="opticsPane">
@@ -146,12 +166,8 @@
                 <input type="range" id="zoom" min="0.5" max="3.5" step="0.01" value="1.0">
             </div>
             <div class="control-group">
-                <div class="control-label"><span>Rotation</span><span class="control-val" id="rotVal">0°</span></div>
+                <div class="control-label"><span>Rotate</span><span class="control-val" id="rotVal">0°</span></div>
                 <input type="range" id="rotation" min="-180" max="180" value="0">
-            </div>
-            <div class="control-group">
-                <div class="control-label"><span>Bokeh (Center Sharp)</span><span class="control-val" id="bokehVal">0</span></div>
-                <input type="range" id="bokeh" min="0" max="60" value="0">
             </div>
         </div>
 
@@ -160,31 +176,46 @@
                 <div class="control-label"><span>Exposure</span><span class="control-val" id="expVal">100%</span></div>
                 <input type="range" id="exposure" min="40" max="180" value="100">
             </div>
-            <div class="control-group">
-                <div class="control-label"><span>Contrast</span><span class="control-val" id="conVal">100%</span></div>
-                <input type="range" id="contrast" min="40" max="180" value="100">
+
+            <div class="mb-4">
+                <div class="control-label mb-3"><span>B&W Processing</span></div>
+                <div class="flex gap-2">
+                    <button class="filter-btn active" data-mode="none" onclick="setMode('none', this)">None</button>
+                    <button class="filter-btn" data-mode="neutral" onclick="setMode('neutral', this)">Classic</button>
+                    <button class="filter-btn" data-mode="yellow" onclick="setMode('yellow', this)">Yellow</button>
+                    <button class="filter-btn" data-mode="red" onclick="setMode('red', this)">Red</button>
+                    <button class="filter-btn" data-mode="sepia" onclick="setMode('sepia', this)">Sepia</button>
+                </div>
             </div>
-            <div class="control-label"><span>RGB Tints</span></div>
-            <div class="flex flex-col gap-1 mt-2">
-                <input type="range" id="redChan" min="-50" max="50" value="0" class="!my-2">
-                <input type="range" id="greenChan" min="-50" max="50" value="0" class="!my-2">
-                <input type="range" id="blueChan" min="-50" max="50" value="0" class="!my-2">
+
+            <div id="bwMixControl" class="control-group opacity-50 transition-opacity">
+                <div class="control-label"><span>Strength</span><span class="control-val" id="mixVal">0%</span></div>
+                <input type="range" id="bwMix" min="0" max="100" value="0">
+            </div>
+
+            <div id="colorTintSection">
+                <div class="control-label"><span>Chemical Tint</span></div>
+                <div class="flex flex-col gap-1 mt-2">
+                    <input type="range" id="redChan" min="-50" max="50" value="0" class="!my-2">
+                    <input type="range" id="greenChan" min="-50" max="50" value="0" class="!my-2">
+                    <input type="range" id="blueChan" min="-50" max="50" value="0" class="!my-2">
+                </div>
             </div>
         </div>
 
         <div class="settings-pane hidden" id="finishPane">
             <div class="control-group">
-                <div class="control-label"><span>Powerful Grain</span><span class="control-val" id="grainVal">30</span></div>
+                <div class="control-label"><span>Film Grain</span><span class="control-val" id="grainVal">30</span></div>
                 <input type="range" id="grain" min="0" max="250" value="30">
             </div>
             <div class="control-group">
-                <div class="control-label"><span>Real Gloss Shine</span><span class="control-val" id="glossVal">0</span></div>
-                <input type="range" id="gloss" min="0" max="100" value="0">
+                <div class="control-label"><span>Gloss</span><span class="control-val" id="glossVal">0</span></div>
+                <input type="range" id="gloss" min="0" max="150" value="0">
             </div>
-            <input type="text" id="markerText" placeholder="Marker scribble..." 
-                class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 mb-4 text-white marker-font outline-none text-lg">
+            <input type="text" id="markerText" placeholder="Write text..." 
+                class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 mb-4 text-white marker-font outline-none text-lg text-center">
             <div class="control-group">
-                <div class="control-label"><span>Text Scale</span><span class="control-val" id="textSizeVal">1.0x</span></div>
+                <div class="control-label"><span>Text Size</span><span class="control-val" id="textSizeVal">1.0x</span></div>
                 <input type="range" id="textSize" min="0.5" max="6" step="0.1" value="1.0">
             </div>
         </div>
@@ -194,14 +225,14 @@
                 <div class="w-full h-full flex items-center justify-center bg-white/5 border border-white/10 rounded-2xl font-bold text-[11px] uppercase tracking-[0.2em] active:bg-white/10">Load</div>
                 <input type="file" id="imgInput" accept="image/*" class="hidden">
             </label>
-            <button id="exportBtn" class="btn-main flex-[2.5] active:scale-[0.98] transition-transform">Save Polaroid</button>
+            <button id="exportBtn" class="btn-main flex-[2.5] active:scale-[0.98] transition-transform">Develop Photo</button>
         </div>
     </div>
 
     <div id="previewOverlay" onclick="hidePreview()">
-        <p class="text-white/40 text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Tap to close • Long-press to save to photos</p>
+        <p class="text-white/40 text-[10px] font-bold uppercase tracking-[0.3em] mb-4">Tap to close • Long-press to save</p>
         <img id="previewImg" src="" alt="Polaroid Preview">
-        <button class="mt-8 px-10 py-4 bg-white/5 rounded-full text-[11px] font-bold uppercase tracking-widest border border-white/10">Return to Studio</button>
+        <button class="mt-8 px-10 py-4 bg-white/5 rounded-full text-[11px] font-bold uppercase tracking-widest border border-white/10">Back to Studio</button>
     </div>
 
 <script>
@@ -213,37 +244,58 @@
     const buffer = document.createElement('canvas');
     const bCtx = buffer.getContext('2d');
     
+    // Grain Noise
     const noiseBuffer = document.createElement('canvas');
     const nCtx = noiseBuffer.getContext('2d');
     function updateNoise() {
         noiseBuffer.width = 512; noiseBuffer.height = 512;
         const idata = nCtx.createImageData(512, 512);
         for(let i=0; i<idata.data.length; i+=4) {
-            const v = Math.random() > 0.5 ? (Math.random() * 255) : (Math.random() * 64);
+            const v = Math.random() > 0.5 ? (Math.random() * 255) : (Math.random() * 80);
             idata.data[i] = v; idata.data[i+1] = v; idata.data[i+2] = v; idata.data[i+3] = 255;
         }
         nCtx.putImageData(idata, 0, 0);
     }
     updateNoise();
 
-    let state = { img: null, x: 0, y: 0, lastX: 0, lastY: 0, isDragging: false };
+    let state = { img: null, x: 0, y: 0, lastX: 0, lastY: 0, isDragging: false, currentMode: 'none' };
 
     const ui = {};
-    ['zoom', 'rotation', 'bokeh', 'exposure', 'contrast', 'redChan', 'greenChan', 'blueChan', 'grain', 'gloss', 'markerText', 'textSize']
+    ['zoom', 'rotation', 'exposure', 'bwMix', 'redChan', 'greenChan', 'blueChan', 'grain', 'gloss', 'markerText', 'textSize']
     .forEach(id => {
         ui[id] = document.getElementById(id);
         ui[id].oninput = () => { updateLabels(); draw(false); };
     });
 
+    function setMode(mode, btn) {
+        state.currentMode = mode;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        const mixCtrl = document.getElementById('bwMixControl');
+        if (mode === 'none') {
+            mixCtrl.classList.add('opacity-50');
+            ui.bwMix.value = 0;
+        } else {
+            mixCtrl.classList.remove('opacity-50');
+            if(ui.bwMix.value == 0) ui.bwMix.value = 100;
+        }
+        
+        updateLabels();
+        draw(false);
+    }
+
     function updateLabels() {
         document.getElementById('zoomVal').innerText = parseFloat(ui.zoom.value).toFixed(1) + 'x';
         document.getElementById('rotVal').innerText = ui.rotation.value + '°';
-        document.getElementById('bokehVal').innerText = ui.bokeh.value;
         document.getElementById('expVal').innerText = ui.exposure.value + '%';
-        document.getElementById('conVal').innerText = ui.contrast.value + '%';
+        document.getElementById('mixVal').innerText = ui.bwMix.value + '%';
         document.getElementById('grainVal').innerText = ui.grain.value;
         document.getElementById('glossVal').innerText = ui.gloss.value;
         document.getElementById('textSizeVal').innerText = parseFloat(ui.textSize.value).toFixed(1) + 'x';
+
+        const bw = parseInt(ui.bwMix.value);
+        document.getElementById('colorTintSection').style.opacity = (100 - (bw * 0.7)) / 100;
     }
 
     function switchTab(tabId, btn) {
@@ -271,19 +323,59 @@
         reader.readAsDataURL(file);
     };
 
-    function applyColorCorrection(context, w, h) {
+    function applyFilmEngine(context, w, h) {
         const exp = parseFloat(ui.exposure.value) / 100;
-        const con = parseFloat(ui.contrast.value) / 100;
+        const mix = parseInt(ui.bwMix.value) / 100;
+        const mode = state.currentMode;
+        
         const rT = parseInt(ui.redChan.value);
         const gT = parseInt(ui.greenChan.value);
         const bT = parseInt(ui.blueChan.value);
+
         const idata = context.getImageData(0, 0, w, h);
         const d = idata.data;
-        const intercept = 128 * (1 - con);
+        
         for (let i = 0; i < d.length; i += 4) {
-            d[i] = ((d[i] * exp) * con + intercept) + rT;
-            d[i+1] = ((d[i+1] * exp) * con + intercept) + gT;
-            d[i+2] = ((d[i+2] * exp) * con + intercept) + bT;
+            let r = (d[i] + rT) * exp;
+            let g = (d[i+1] + gT) * exp;
+            let b = (d[i+2] + bT) * exp;
+
+            if (mode !== 'none' && mix > 0) {
+                let gray;
+                switch(mode) {
+                    case 'yellow': 
+                        // Old-school Yellow: boost Red/Green, cut Blue (classic outdoor contrast)
+                        gray = (r * 0.5 + g * 0.45 + b * 0.05); 
+                        break;
+                    case 'red':    
+                        // Old-school Red: Extremely high red dominance (dark sky effect)
+                        gray = (r * 0.9 + g * 0.08 + b * 0.02); 
+                        break;
+                    case 'sepia':  
+                        // Base luminance
+                        gray = (r * 0.3 + g * 0.59 + b * 0.11); 
+                        break;
+                    default:       
+                        gray = (r * 0.299 + g * 0.587 + b * 0.114);
+                }
+
+                let targetR = gray, targetG = gray, targetB = gray;
+                
+                if (mode === 'sepia') {
+                    // Classic "Oxidized" warm brown
+                    targetR = gray + 38;
+                    targetG = gray + 18;
+                    targetB = gray - 12;
+                }
+
+                r = r * (1 - mix) + targetR * mix;
+                g = g * (1 - mix) + targetG * mix;
+                b = b * (1 - mix) + targetB * mix;
+            }
+
+            d[i] = Math.max(0, Math.min(255, r));
+            d[i+1] = Math.max(0, Math.min(255, g));
+            d[i+2] = Math.max(0, Math.min(255, b));
         }
         context.putImageData(idata, 0, 0);
     }
@@ -293,15 +385,24 @@
         const s = highRes ? 1 : (Math.min(window.innerWidth * 2, 800) / TOTAL_W);
         canvas.width = TOTAL_W * s; canvas.height = TOTAL_H * s;
         
+        // Frame Base
         ctx.fillStyle = "#ffffff"; 
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Branding
+        ctx.save();
+        ctx.fillStyle = "rgba(0,0,0,0.06)";
+        ctx.font = `800 ${46 * s}px 'Plus Jakarta Sans'`;
+        ctx.textAlign = "right";
+        ctx.fillText("600", canvas.width - (MARGIN * s), canvas.height - (70 * s));
+        ctx.restore();
 
         const m = MARGIN * s, b = BASE_S * s, z = parseFloat(ui.zoom.value);
         const r = parseInt(ui.rotation.value) * Math.PI / 180;
         const aspect = state.img.width / state.img.height;
         let dw = aspect > 1 ? (b * z * aspect) : (b * z), dh = aspect > 1 ? (b * z) : (b * z / aspect);
 
-        // BUFFER PREPARATION
+        // Photo Assembly Buffer
         buffer.width = b; buffer.height = b;
         bCtx.fillStyle = "#000"; bCtx.fillRect(0, 0, b, b);
         bCtx.save();
@@ -309,117 +410,60 @@
         bCtx.rotate(r);
         bCtx.drawImage(state.img, -dw/2, -dh/2, dw, dh);
         bCtx.restore();
-        applyColorCorrection(bCtx, b, b);
+        applyFilmEngine(bCtx, b, b);
 
-        // BOKEH
-        const bokeh = parseFloat(ui.bokeh.value);
-        if(bokeh > 1) {
-            const blurBuffer = document.createElement('canvas');
-            blurBuffer.width = b; blurBuffer.height = b;
-            const blurCtx = blurBuffer.getContext('2d');
-            blurCtx.filter = `blur(${bokeh}px)`;
-            blurCtx.drawImage(buffer, 0, 0);
-            
-            const mask = document.createElement('canvas');
-            mask.width = b; mask.height = b;
-            const mCtx = mask.getContext('2d');
-            const grad = mCtx.createRadialGradient(b/2, b/2, 0, b/2, b/2, b/2);
-            grad.addColorStop(0.35, 'rgba(0,0,0,0)'); 
-            grad.addColorStop(0.85, 'rgba(0,0,0,1)');
-            mCtx.fillStyle = grad;
-            mCtx.fillRect(0,0,b,b);
-
-            bCtx.save();
-            bCtx.globalCompositeOperation = 'source-over';
-            const finalBlur = document.createElement('canvas');
-            finalBlur.width = b; finalBlur.height = b;
-            const fbCtx = finalBlur.getContext('2d');
-            fbCtx.drawImage(blurBuffer, 0, 0);
-            fbCtx.globalCompositeOperation = 'destination-in';
-            fbCtx.drawImage(mask, 0, 0);
-            bCtx.drawImage(finalBlur, 0, 0);
-            bCtx.restore();
-        }
-
-        // PHOTO AREA
+        // Draw Image Area
         ctx.save();
-        ctx.beginPath(); 
-        ctx.rect(m, m, b, b); 
-        ctx.clip(); 
+        ctx.beginPath(); ctx.rect(m, m, b, b); ctx.clip();
         ctx.drawImage(buffer, m, m);
 
-        // GRAIN
+        // Grain
         const gVal = parseInt(ui.grain.value);
         if(gVal > 0) {
             ctx.save();
-            ctx.globalCompositeOperation = 'soft-light';
-            ctx.globalAlpha = Math.min(1.0, gVal / 100);
+            ctx.globalCompositeOperation = 'overlay';
+            ctx.globalAlpha = gVal / 255;
             const ptrn = ctx.createPattern(noiseBuffer, 'repeat');
             ctx.fillStyle = ptrn;
             ctx.fillRect(m, m, b, b);
             ctx.restore();
         }
 
-        // IMPROVED REAL GLOSS
+        // Gloss - Strictly Internal
         const glossVal = parseInt(ui.gloss.value);
         if(glossVal > 0) {
             ctx.save();
-            const alpha = glossVal / 100;
-            
-            // 1. Soft environmental reflection (broad diagonal)
-            ctx.globalAlpha = alpha * 0.3;
-            const envGrad = ctx.createLinearGradient(m, m, m + b, m + b);
-            envGrad.addColorStop(0, 'white');
-            envGrad.addColorStop(0.3, 'rgba(255,255,255,0.2)');
-            envGrad.addColorStop(0.6, 'rgba(255,255,255,0)');
-            envGrad.addColorStop(1, 'rgba(255,255,255,0.1)');
-            ctx.fillStyle = envGrad;
+            const alpha = (glossVal / 100) * 1.5;
+            const grad1 = ctx.createLinearGradient(m, m, m, m + b);
+            grad1.addColorStop(0, `rgba(255,255,255,${0.4 * alpha})`);
+            grad1.addColorStop(0.4, `rgba(255,255,255,${0.08 * alpha})`);
+            grad1.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = grad1;
             ctx.fillRect(m, m, b, b);
 
-            // 2. High-intensity Studio Hot Spot (Top left)
-            ctx.globalAlpha = alpha * 0.6;
-            const hotSpot = ctx.createRadialGradient(m + b*0.2, m + b*0.15, 0, m + b*0.2, m + b*0.15, b*0.4);
-            hotSpot.addColorStop(0, 'rgba(255,255,255,0.8)');
-            hotSpot.addColorStop(0.2, 'rgba(255,255,255,0.4)');
-            hotSpot.addColorStop(1, 'rgba(255,255,255,0)');
-            ctx.fillStyle = hotSpot;
+            const grad2 = ctx.createRadialGradient(m + b*0.1, m + b*0.1, 0, m + b*0.1, m + b*0.1, b*0.8);
+            grad2.addColorStop(0, `rgba(255,255,255,${0.7 * alpha})`);
+            grad2.addColorStop(0.3, `rgba(255,255,255,${0.15 * alpha})`);
+            grad2.addColorStop(0.8, 'rgba(255,255,255,0)');
+            ctx.fillStyle = grad2;
             ctx.fillRect(m, m, b, b);
-
-            // 3. Secondary Rim Reflection (Lower right)
-            ctx.globalAlpha = alpha * 0.2;
-            const rimSpot = ctx.createRadialGradient(m + b*0.85, m + b*0.9, 0, m + b*0.85, m + b*0.9, b*0.2);
-            rimSpot.addColorStop(0, 'rgba(255,255,255,0.5)');
-            rimSpot.addColorStop(1, 'rgba(255,255,255,0)');
-            ctx.fillStyle = rimSpot;
-            ctx.fillRect(m, m, b, b);
-
             ctx.restore();
         }
         ctx.restore(); 
 
-        // GUIDES
-        if(state.isDragging && !highRes) {
-            ctx.save();
-            ctx.translate(m + b/2 + state.x * s, m + b/2 + state.y * s);
-            ctx.rotate(r);
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
-            ctx.lineWidth = 2 * s;
-            ctx.setLineDash([10 * s, 10 * s]);
-            ctx.strokeRect(-dw/2, -dh/2, dw, dh);
-            ctx.restore();
-        }
-
-        // TEXT
+        // Scribble - Dead Center
         if(ui.markerText.value) {
             const sm = parseFloat(ui.textSize.value);
-            ctx.font = `${100 * s * sm}px 'Permanent Marker'`;
-            ctx.fillStyle = "rgba(15,15,35,0.75)";
+            ctx.font = `${110 * s * sm}px 'Permanent Marker'`;
+            ctx.fillStyle = "rgba(10,10,35,0.85)";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.save();
-            const textY = TOTAL_H * s - (FOOTER * s / 2) + (20 * s);
-            ctx.translate(canvas.width/2, textY);
-            ctx.rotate(-0.015);
+            // Calculate center of footer margin
+            const footerCenterY = (TOTAL_H * s - FOOTER * s) + (FOOTER * s / 2) + (30 * s);
+            ctx.translate(canvas.width/2, footerCenterY);
+            // Minimal tilt for authenticity, but kept centered
+            ctx.rotate(-0.01);
             ctx.fillText(ui.markerText.value, 0, 0);
             ctx.restore();
         }
@@ -441,12 +485,12 @@
         draw(false);
     };
 
-    v.addEventListener('mousedown', (e) => { state.isDragging = true; state.lastX = e.clientX; state.lastY = e.clientY; draw(false); });
-    v.addEventListener('touchstart', (e) => { state.isDragging = true; state.lastX = e.touches[0].clientX; state.lastY = e.touches[0].clientY; draw(false); }, {passive: false});
+    v.addEventListener('mousedown', (e) => { state.isDragging = true; state.lastX = e.clientX; state.lastY = e.clientY; });
+    v.addEventListener('touchstart', (e) => { state.isDragging = true; state.lastX = e.touches[0].clientX; state.lastY = e.touches[0].clientY; }, {passive: false});
     window.addEventListener('mousemove', handleMove);
     window.addEventListener('touchmove', (e) => { if(state.isDragging) e.preventDefault(); handleMove(e); }, {passive: false});
-    window.addEventListener('mouseup', () => { state.isDragging = false; draw(false); });
-    window.addEventListener('touchend', () => { state.isDragging = false; draw(false); });
+    window.addEventListener('mouseup', () => state.isDragging = false);
+    window.addEventListener('touchend', () => state.isDragging = false);
 
     function showPreview() {
         if(!state.img) return;
@@ -468,14 +512,14 @@
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = `polaroid_studio_${Date.now()}.jpg`;
+                link.download = `polaroid_600_${Date.now()}.jpg`;
                 document.body.appendChild(link);
                 link.click();
                 showPreview(); 
                 setTimeout(() => {
                     document.body.removeChild(link);
                     window.URL.revokeObjectURL(url);
-                    btn.innerText = "Save Polaroid";
+                    btn.innerText = "Develop Photo";
                     btn.disabled = false;
                 }, 100);
             }, 'image/jpeg', 0.95);
